@@ -46,22 +46,58 @@ export function RegisterPage() {
   const getInputStyle = (fieldName: string) => ({
     ...authStyles.input,
     ...(focusedField === fieldName ? {
-      borderColor: '#236eb2',
-      background: 'rgba(35, 110, 178, 0.1)',
-      boxShadow: '0 0 0 3px rgba(35, 110, 178, 0.1)',
+      borderColor: '#3b82f6',
+      background: 'rgba(59, 130, 246, 0.1)',
+      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.1), 0 10px 25px -5px rgba(59, 130, 246, 0.2)',
+      transform: 'translateY(-2px)',
     } : {}),
     ...(fieldName === 'confirmPassword' && password && confirmPassword && password !== confirmPassword ? {
       borderColor: '#ef4444',
       background: 'rgba(239, 68, 68, 0.1)',
+      boxShadow: '0 0 0 4px rgba(239, 68, 68, 0.1)',
     } : {}),
   });
 
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
   const passwordsDontMatch = password && confirmPassword && password !== confirmPassword;
 
+  const getButtonStyle = (isSubmitting: boolean, isDisabled: boolean) => ({
+    ...authStyles.button,
+    opacity: (isSubmitting || isDisabled) ? 0.6 : 1,
+    transform: isSubmitting ? 'scale(0.98) translateY(1px)' : 'scale(1) translateY(0)',
+    boxShadow: (isSubmitting || isDisabled)
+      ? '0 4px 15px -3px rgba(59, 130, 246, 0.2)' 
+      : '0 10px 25px -5px rgba(59, 130, 246, 0.4), 0 4px 6px -2px rgba(59, 130, 246, 0.05)',
+    cursor: (isSubmitting || isDisabled) ? 'not-allowed' : 'pointer',
+  });
+
   return (
     <div style={authStyles.formContainer}>
+      {/* Background decoration */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)',
+        pointerEvents: 'none',
+      }} />
+      
       <form onSubmit={handleSubmit} style={authStyles.form}>
+        {/* Form glow effect */}
+        <div style={{
+          position: 'absolute',
+          top: -2,
+          left: -2,
+          right: -2,
+          bottom: -2,
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
+          borderRadius: 26,
+          zIndex: -1,
+          opacity: 0.5,
+        }} />
+        
         <h1 style={authStyles.title}>Create Account</h1>
         
         <label style={authStyles.label}>Email Address</label>
@@ -113,11 +149,7 @@ export function RegisterPage() {
         <button 
           type="submit" 
           disabled={submitting || passwordsDontMatch} 
-          style={{
-            ...authStyles.button,
-            opacity: (submitting || passwordsDontMatch) ? 0.7 : 1,
-            transform: submitting ? 'scale(0.98)' : 'scale(1)',
-          }}
+          style={getButtonStyle(submitting, passwordsDontMatch)}
         >
           {submitting ? 'Creating account...' : 'Create Account'}
         </button>
