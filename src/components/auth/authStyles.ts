@@ -1,6 +1,23 @@
 import React from 'react';
 
 export const authStyles = {
+  // Loading styles for protected route
+  loadingContainer: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #071624 0%, #0c1a2e 50%, #1e293b 100%)',
+    color: '#fff',
+    fontSize: '18px',
+    zIndex: 9999,
+  },
+
   input: {
     width: '100%',
     padding: '14px 16px',

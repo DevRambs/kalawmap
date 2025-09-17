@@ -23,16 +23,9 @@ export function ProtectedRoute() {
   
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #071624 0%, #0c1a2e 50%, #1e293b 100%)',
-        color: '#fff',
-        fontSize: '18px'
-      }}>
-        Loading...
+      <div className="auth-loading-container">
+        <div className="auth-loading-spinner"></div>
+        <div className="auth-loading-text">Loading...</div>
       </div>
     );
   }

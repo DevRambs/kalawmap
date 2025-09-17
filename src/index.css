@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== GLOBAL RESET AND BASE STYLES ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+/* ===== AUTH LOADING STYLES ===== */
+.auth-loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #071624 0%, #0c1a2e 50%, #1e293b 100%);
+  color: #fff;
+  z-index: 9999;
+}
+
+.auth-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.auth-loading-text {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== MAIN APP STYLES (scoped to prevent auth conflicts) ===== */
+.main-app-container {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.main-app-container .area-item {
 .area-item {
   background: #0f1b2d;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -13,17 +74,17 @@
   transition: background 0.2s ease;
 }
 
-.area-item:hover {
+.main-app-container .area-item:hover {
   background: #18263d;
 }
 
-.area-header {
+.main-app-container .area-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.area-title {
+.main-app-container .area-title {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -32,11 +93,11 @@
   font-size: 14px;
 }
 
-.area-icon {
+.main-app-container .area-icon {
   font-size: 16px;
 }
 
-.delete-area-btn {
+.main-app-container .delete-area-btn {
   background: transparent;
   border: none;
   color: #f87171;
@@ -45,58 +106,58 @@
   transition: color 0.2s;
 }
 
-.delete-area-btn:hover {
+.main-app-container .delete-area-btn:hover {
   color: #dc2626;
 }
 
-.area-simulated {
+.main-app-container .area-simulated {
   font-size: 12px;
   color: #3b82f6;
   font-style: italic;
   margin-top: 4px;
 }
 
-.area-details {
+.main-app-container .area-details {
   margin-top: 6px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
 }
 
-.risk-row {
+.main-app-container .risk-row {
   margin: 2px 0;
 }
 
-.risk-badge {
+.main-app-container .risk-badge {
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
   text-transform: capitalize;
 }
 
-.risk-low {
+.main-app-container .risk-low {
   background: rgba(16, 185, 129, 0.2);
   color: #10b981;
 }
 
-.risk-medium {
+.main-app-container .risk-medium {
   background: rgba(245, 158, 11, 0.2);
   color: #f59e0b;
 }
 
-.risk-high {
+.main-app-container .risk-high {
   background: rgba(220, 38, 38, 0.2);
   color: #dc2626;
 }
 
-.was-risk {
+.main-app-container .was-risk {
   font-size: 11px;
   color: rgba(255,255,255,0.5);
   margin-left: 4px;
 }
 
-/* Overlay */
-.modal-overlay {
+/* Modal styles - scoped to main app */
+.main-app-container .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -109,8 +170,7 @@
   z-index: 9999;
 }
 
-/* Modal box */
-.modal-box {
+.main-app-container .modal-box {
   background: #0f1b2d;
   padding: 20px;
   border-radius: 10px;
@@ -123,26 +183,25 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
-.modal-box h3 {
+.main-app-container .modal-box h3 {
   margin-top: 0;
   margin-bottom: 10px;
   font-size: 18px;
 }
 
-.modal-box p {
+.main-app-container .modal-box p {
   margin-bottom: 20px;
   font-size: 14px;
   color: rgba(255,255,255,0.8);
 }
 
-/* Actions */
-.modal-actions {
+.main-app-container .modal-actions {
   display: flex;
   justify-content: space-between;
   gap: 10px;
 }
 
-.modal-actions button {
+.main-app-container .modal-actions button {
   flex: 1;
   padding: 8px 12px;
   border: none;
@@ -152,68 +211,62 @@
   transition: background 0.2s;
 }
 
-.btn-cancel {
+.main-app-container .btn-cancel {
   background: #374151;
   color: white;
 }
 
-.btn-cancel:hover {
+.main-app-container .btn-cancel:hover {
   background: #4b5563;
 }
 
-.btn-delete {
+.main-app-container .btn-delete {
   background: #dc2626;
   color: white;
 }
 
-.btn-delete:hover {
+.main-app-container .btn-delete:hover {
   background: #b91c1c;
 }
 
-/* Show modal */
-.modal-overlay.active {
+.main-app-container .modal-overlay.active {
   display: flex;
 }
-/* Hide draw controls by default */
-#map .leaflet-draw {
+
+/* Map controls - scoped to main app */
+.main-app-container #map .leaflet-draw {
   display: none !important;
 }
 
-/* Show when "show-draw-controls" is added to map container */
-#map.show-draw-controls .leaflet-draw {
+.main-app-container #map.show-draw-controls .leaflet-draw {
   display: block !important;
 }
 
-/* Optional: style the active toggle button */
-#drawPolygonBtn.active {
-  background: #2563eb;   /* blue background */
+.main-app-container #drawPolygonBtn.active {
+  background: #2563eb;
   color: white;
   border-radius: 6px;
 }
 
-/* For high risk markers */
-.custom-marker-icon.high-risk-glow {
+/* Animation effects - scoped to main app */
+.main-app-container .custom-marker-icon.high-risk-glow {
   animation: glowPulse 1.5s infinite alternate, shake 0.4s infinite;
 }
 
-/* For high risk polygons */
-.leaflet-interactive.high-risk-polygon {
+.main-app-container .leaflet-interactive.high-risk-polygon {
   animation: polygonGlow 2s infinite alternate, shake 0.4s infinite;
 }
 
-/* Glowing effect */
 @keyframes glowPulse {
   from { box-shadow: 0 0 8px #dc2626, 0 0 16px #dc2626; }
   to { box-shadow: 0 0 16px #ff4d4d, 0 0 32px #ff4d4d; }
 }
 
-/* Polygon glowing effect */
 @keyframes polygonGlow {
   from { stroke: #dc2626; fill-opacity: 0.3; }
   to { stroke: #ff4d4d; fill-opacity: 0.5; }
 }
 
-/* Shaking effect */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-2px); }
