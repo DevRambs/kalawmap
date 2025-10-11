@@ -42,6 +42,9 @@ interface WeatherData {
 interface WeatherPanelProps {
   coordinates: { lat: number; lng: number };
   isDarkTheme: boolean;
+  startExpanded?: boolean; // when true, panel content starts expanded
+  startForecastOpen?: boolean; // when true, 5-day forecast section starts open
+  hideCollapseControls?: boolean; // when true (mobile), hide collapse/expand buttons
 }
 
 const getWeatherIcon = (main: string, description: string) => {
@@ -167,12 +170,16 @@ const fetchWeatherData = async (lat: number, lng: number): Promise<WeatherData |
   }
 };
 
-export const WeatherPanel: React.FC<WeatherPanelProps> = ({ coordinates, isDarkTheme }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+export const WeatherPanel: React.FC<WeatherPanelProps> = ({ coordinates, isDarkTheme, startExpanded = false, startForecastOpen = false, hideCollapseControls = false }) => {
+  const [isCollapsed, setIsCollapsed] = useState(!startExpanded);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showForecast, setShowForecast] = useState(false);
+  const [showForecast, setShowForecast] = useState(startForecastOpen);
+
+  // Effective states based on whether collapse controls are hidden (mobile)
+  const effectiveCollapsed = hideCollapseControls ? false : isCollapsed;
+  const effectiveShowForecast = hideCollapseControls ? true : showForecast;
 
   useEffect(() => {
     const loadWeatherData = async () => {
@@ -219,21 +226,23 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({ coordinates, isDarkT
             </div>
             <span className={`${textClasses} font-semibold text-lg`}>Weather Forecast</span>
           </div>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-2 ${buttonClasses} rounded-lg transition-all duration-200 hover:scale-105`}
-          >
-            {isCollapsed ? (
-              <ChevronDown className={`w-4 h-4 ${textClasses}`} />
-            ) : (
-              <ChevronUp className={`w-4 h-4 ${textClasses}`} />
-            )}
-          </button>
+          {!hideCollapseControls && (
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={`p-2 ${buttonClasses} rounded-lg transition-all duration-200 hover:scale-105`}
+            >
+              {isCollapsed ? (
+                <ChevronDown className={`w-4 h-4 ${textClasses}`} />
+              ) : (
+                <ChevronUp className={`w-4 h-4 ${textClasses}`} />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      {!isCollapsed && (
+      {!effectiveCollapsed && (
         <div className="p-4 space-y-4">
           {isLoading && (
             <div className={`${textClasses} text-center py-4`}>
@@ -313,22 +322,24 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({ coordinates, isDarkT
 
               {/* 5-Day Forecast - Collapsible */}
               <div className={`rounded-lg ${isDarkTheme ? 'bg-gray-800/50' : 'bg-white/10'}`}>
-                <button
-                  onClick={() => setShowForecast(!showForecast)}
-                  className={`w-full p-3 flex items-center justify-between ${textClasses} hover:opacity-80 transition-opacity`}
-                >
-                  <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                    <span className="font-medium">5-Day Forecast</span>
-                  </div>
-                  {showForecast ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
+                {!hideCollapseControls && (
+                  <button
+                    onClick={() => setShowForecast(!showForecast)}
+                    className={`w-full p-3 flex items-center justify-between ${textClasses} hover:opacity-80 transition-opacity`}
+                  >
+                    <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                      <span className="font-medium">5-Day Forecast</span>
+                    </div>
+                    {showForecast ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
                 
-                {showForecast && (
+                {effectiveShowForecast && (
                   <div className="px-3 pb-3 space-y-2">
                   {weatherData.daily.slice(1, 6).map((day, index) => (
                     <div key={index} className="flex items-center justify-between py-2">

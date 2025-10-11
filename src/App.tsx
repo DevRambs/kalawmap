@@ -12,7 +12,8 @@ import {
   ChevronDown,
   Edit3,
   Square,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
@@ -36,6 +37,7 @@ import { AdminPage } from './components/AdminPage';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
+import MobileNav from './components/MobileNav';
 
 const SATELLITE_STYLE = {
   version: 8,
@@ -219,6 +221,10 @@ function App() {
 
   const [currentLayer, setCurrentLayer] = useState<BasemapKey>('satellite');
   const [showBasemapMenu, setShowBasemapMenu] = useState(false);
+  // Mobile UI states (exclude Live Risk Monitor from mobile overlays)
+  const [showMobileWeatherPanel, setShowMobileWeatherPanel] = useState(false);
+  const [showMobileLegend, setShowMobileLegend] = useState(false);
+  const [showMobileMarkerControls, setShowMobileMarkerControls] = useState(false);
   const [floodRiskAreas, setFloodRiskAreas] = useState<FloodRiskArea[]>([]);
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
@@ -712,6 +718,25 @@ function App() {
     return BASEMAPS[currentLayer].style;
   };
 
+  // MobileNav exclusive toggling: ensure only one mobile panel is open at a time
+  const toggleMobileWeather = useCallback(() => {
+    setShowMobileLegend(false);
+    setShowMobileMarkerControls(false);
+    setShowMobileWeatherPanel(v => !v);
+  }, []);
+
+  const toggleMobileLegend = useCallback(() => {
+    setShowMobileWeatherPanel(false);
+    setShowMobileMarkerControls(false);
+    setShowMobileLegend(v => !v);
+  }, []);
+
+  const toggleMobileMarkerControls = useCallback(() => {
+    setShowMobileWeatherPanel(false);
+    setShowMobileLegend(false);
+    setShowMobileMarkerControls(v => !v);
+  }, []);
+
   // Show loading screen while checking authentication
   if (loading) {
     return (
@@ -1001,8 +1026,8 @@ function App() {
         defaultOpen={sidebarOpen}
       />
 
-      {/* Top Right Panel - Map Controls */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Top Right Panel - Map Controls (Desktop Only) */}
+      <div className="absolute top-4 right-4 z-10 hidden md:block">
         <div className={`${panelClasses} p-3`}>
           <div className="flex flex-col gap-3">
             {/* Zoom Controls */}
@@ -1058,29 +1083,48 @@ function App() {
         </div>
       </div>
 
-      {/* Weather Panel - Always visible */}
-      <div className="absolute top-4 right-4 z-20 pointer-events-none" style={{ transform: 'translateX(-120px)' }}>
+      {/* Weather Panel */}
+      {/* Desktop: always visible at top-right */}
+      <div className="absolute top-4 right-4 z-20 pointer-events-none hidden md:block" style={{ transform: 'translateX(-120px)' }}>
         <div className="pointer-events-auto">
           <WeatherPanel 
             coordinates={{ lat: viewState.latitude, lng: viewState.longitude }}
             isDarkTheme={isDarkTheme}
+            startExpanded={false}
+            startForecastOpen={false}
+            hideCollapseControls={false}
           />
         </div>
       </div>
 
-      {/* Live Risk Monitor Panel */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
-        <div className="pointer-events-auto">
-          <LiveRiskMonitor 
-            onRiskAreasUpdate={loadFloodRiskAreas}
+      {/* Mobile: show WeatherPanel itself centered (no extra container or X) */}
+      {showMobileWeatherPanel && (
+        <div className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-auto">
+          <WeatherPanel 
+            coordinates={{ lat: viewState.latitude, lng: viewState.longitude }}
             isDarkTheme={isDarkTheme}
-            userRole={userRole}
+            startExpanded={true}
+            startForecastOpen={true}
+            hideCollapseControls={true}
           />
         </div>
-      </div>
+      )}
 
-      {/* Bottom Right Panel - Additional Tools */}
-      <div className="absolute bottom-4 right-4 z-10 space-y-3">
+      {/* Live Risk Monitor Panel (Top Center) - hidden on mobile when Weather is open */}
+      {!showMobileWeatherPanel && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+          <div className="pointer-events-auto">
+            <LiveRiskMonitor 
+              onRiskAreasUpdate={loadFloodRiskAreas}
+              isDarkTheme={isDarkTheme}
+              userRole={userRole}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Right Panel - Additional Tools (Desktop Only) */}
+      <div className="absolute bottom-4 right-4 z-10 space-y-3 hidden md:block">
         {/* Drawing Tools Panel */}
         <div className={`${panelClasses} p-3`}>
           <div className="flex flex-col gap-2">
@@ -1134,8 +1178,8 @@ function App() {
 
       </div>
 
-      {/* Bottom Left Panel - Coordinates, Zoom & Legend */}
-      <div className="absolute bottom-4 left-4 z-10">
+      {/* Bottom Left Panel - Coordinates, Zoom & Legend (Desktop Only) */}
+      <div className="absolute bottom-4 left-4 z-10 hidden md:block">
         <div className={`${panelClasses} transition-all duration-300`}>
           {/* Collapsible Header */}
           <div className={`p-3 border-b ${isDarkTheme ? 'border-gray-600/50' : 'border-white/20'}`}>
@@ -1234,9 +1278,9 @@ function App() {
         </div>
       </div>
 
-      {/* Drawing Instructions */}
+      {/* Drawing Instructions (Desktop Only) */}
       {drawingState.currentTool && (
-        <div className="absolute bottom-[calc(4rem+150px)] right-4 z-10">
+        <div className="absolute bottom-[calc(4rem+150px)] right-4 z-10 hidden md:block">
           <div className={`${panelClasses} p-4 w-64 border-2 border-yellow-400 animate-pulse`}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
@@ -1271,6 +1315,125 @@ function App() {
                 Finish Area ({polygonPoints.length} points)
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Navigation (Mobile Only) */}
+      <MobileNav
+        isDarkTheme={isDarkTheme}
+        onToggleWeatherPanel={toggleMobileWeather}
+        onToggleLegend={toggleMobileLegend}
+        onToggleMarkerControls={toggleMobileMarkerControls}
+        isWeatherPanelOpen={showMobileWeatherPanel}
+        isLegendOpen={showMobileLegend}
+        isMarkerControlsOpen={showMobileMarkerControls}
+      />
+
+      {/* Live Risk Monitor mobile overlay removed: remains top-center */}
+
+      {/* Weather Forecast remains in its own panel; MobileNav toggles visibility on mobile */}
+
+      {/* Mobile Legend Panel (Mobile Only) */}
+      {showMobileLegend && (
+        <div className="md:hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40 flex items-center justify-center">
+          <div className={`${panelClasses} p-4 w-11/12 max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-end">
+              <button onClick={() => setShowMobileLegend(false)} className={`${buttonClasses} p-2 rounded-full`}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Legend Content */}
+            <div className="p-3 space-y-4">
+              <div className={`${textClasses} text-sm font-mono space-y-1`}>
+                <div className="flex items-center gap-2">
+                  <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-300'}>Lat:</span>
+                  <span>{formatCoordinate(viewState.latitude, false)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-300'}>Lng:</span>
+                  <span>{formatCoordinate(viewState.longitude, true)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-300'}>Zoom:</span>
+                  <span>{viewState.zoom.toFixed(1)}</span>
+                </div>
+                <div className={`flex items-center gap-2 pt-1 border-t ${isDarkTheme ? 'border-gray-600/50' : 'border-white/20'}`}>
+                  <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-300'}>Layer:</span>
+                  <span>{BASEMAPS[currentLayer].name}</span>
+                </div>
+              </div>
+
+              <div className={`pt-3 border-t ${isDarkTheme ? 'border-gray-600/50' : 'border-white/20'}`}>
+                <h3 className={`${textClasses} text-sm font-semibold mb-2`}>Flood Risk Levels</h3>
+                <div className="space-y-1">
+                  {Object.entries(RISK_COLORS).map(([level, color]) => (
+                    <div key={level} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full border border-white/50"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className={`${textClasses} text-xs`}>{level}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className={`mt-2 pt-2 border-t ${isDarkTheme ? 'border-gray-600/50' : 'border-white/20'}`}>
+                  <p className={`${textClasses} text-xs`}>
+                    Flood-Prone Areas: {floodRiskAreas.length}
+                  </p>
+                  <p className={`${textClasses} text-xs mt-1`}>
+                    High Risk: {floodRiskAreas.filter(area => area.riskLevel === 'High' || area.riskLevel === 'Severe').length}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Marker Size Controls Panel (Mobile Only) */}
+      {showMobileMarkerControls && (
+        <div className="md:hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40 flex items-center justify-center">
+          <div className={`${panelClasses} p-4 w-11/12 max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-end">
+              <button onClick={() => setShowMobileMarkerControls(false)} className={`${buttonClasses} p-2 rounded-full`}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Marker Size Controls Content */}
+            <div className={`mt-3 pt-3 border-t ${isDarkTheme ? 'border-gray-600/50' : 'border-white/20'}`}>
+              <h3 className={`${textClasses} text-sm font-semibold mb-2`}>Marker Size Controls</h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className={`${textClasses} text-xs block mb-1`}>
+                    Base Marker Size: {baseMarkerSize}
+                  </label>
+                  <input 
+                    type="range" 
+                    min="10" 
+                    max="30" 
+                    value={baseMarkerSize} 
+                    onChange={(e) => setBaseMarkerSize(parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer dark:bg-blue-700"
+                  />
+                </div>
+                
+                <div>
+                  <label className={`${textClasses} text-xs block mb-1`}>
+                    Glow Effect Size: {glowMarkerSize}
+                  </label>
+                  <input 
+                    type="range" 
+                    min="20" 
+                    max="50" 
+                    value={glowMarkerSize} 
+                    onChange={(e) => setGlowMarkerSize(parseInt(e.target.value))}
+                    className="w-full h-1.5 bg-orange-200 rounded-lg appearance-none cursor-pointer dark:bg-orange-700"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

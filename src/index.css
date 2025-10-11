@@ -51,27 +51,28 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(59, 130, 246, 0.6) rgba(0, 0, 0, 0.05);
 }
-/* Custom scrollbar for sidebar marked areas */
+/* Custom scrollbar for Sidebar with smooth edges */
+.sidebar-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(148, 163, 184, 0.7) transparent; /* thumb and track colors */
+  scrollbar-gutter: stable; /* Prevent layout shift when scrollbar appears (supported browsers) */
+}
+
 .sidebar-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px; /* WebKit */
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: transparent;
+  border-radius: 9999px; /* fully rounded track */
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.6);
-  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.7); /* slate-400/500 tone */
+  border-radius: 9999px; /* fully rounded thumb */
+  border: 2px solid rgba(255, 255, 255, 0.8); /* smooth edge against white sidebar */
 }
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.8);
-}
-
-/* For Firefox */
-.sidebar-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.6) rgba(255, 255, 255, 0.1);
+  background: rgba(100, 116, 139, 0.8); /* darker slate on hover */
 }
